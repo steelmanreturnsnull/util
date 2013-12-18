@@ -1,0 +1,33 @@
+<project default="all" basedir=".">
+
+	<property file="build.properties"/>	
+	
+	<path id="classpath">
+		<pathelement location="${weblogic.home.dir}/server/lib/weblogic.jar"/>
+		<pathelement location="${weblogic.root.dir}/oracle_common/modules/oracle.webservices_11.1.1/wsa.jar"/>
+	</path>
+	
+	<target name="all" depends="build" />
+	<target name="build" depends="generate-wsdl" />
+			
+	<taskdef name="jaxwsgenwsdl" classpathref="classpath" classname="oracle.j2ee.ws.tools.wsa.cli.ant.JaxwsGenWSDL" />
+	<taskdef name="jaxwsgenproxy" classpathref="classpath" classname="oracle.j2ee.ws.tools.wsa.cli.ant.JaxwsGenProxy" />
+	<taskdef name="jaxwsassemble" classpathref="classpath" classname="oracle.j2ee.ws.tools.wsa.cli.ant.JaxwsAssemble" />
+	
+	<!-- Compile Webservice Core -->
+	<target name="compile-ws" description="Compile Webservice Java source files">
+		<javac destdir="${output.dir}" classpathref="classpath" debug="${javac.debug}" nowarn="${javac.nowarn}" deprecation="${javac.deprecation}" encoding="UTF8" source="1.6" target="1.6">
+			<src path="${src.java.ws.dir}"/>
+		</javac>
+	</target>
+	
+	<target name="generate-wsdl" description="Generates WSDL from java service class">
+
+		<!-- Create WSDLS-->
+		<jaxwsgenwsdl classpath="${output.dir}" classpathref="classpath"
+  		interfaceName="ws.HelloPort"   className= "ws.HelloPortImpl"
+      	targetNamespace="http://www.pinjie.com/hello/1" output= "${output.dir}" />
+
+	</target>
+	
+</project>
