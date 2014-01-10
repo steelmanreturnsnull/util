@@ -7,27 +7,107 @@
 		<pathelement location="${weblogic.root.dir}/oracle_common/modules/oracle.webservices_11.1.1/wsa.jar"/>
 	</path>
 	
-	<target name="all" depends="build" />
-	<target name="build" depends="generate-wsdl" />
+	<target name="all" depends="init, build" />
+	<target name="init" depends="init-log, clean, init-env" />
+	<target name="build" depends="build-ws-jar, generate-wsdl, generate-wsclient, generate-war, build-webservice-ear" />
 			
 	<taskdef name="jaxwsgenwsdl" classpathref="classpath" classname="oracle.j2ee.ws.tools.wsa.cli.ant.JaxwsGenWSDL" />
 	<taskdef name="jaxwsgenproxy" classpathref="classpath" classname="oracle.j2ee.ws.tools.wsa.cli.ant.JaxwsGenProxy" />
 	<taskdef name="jaxwsassemble" classpathref="classpath" classname="oracle.j2ee.ws.tools.wsa.cli.ant.JaxwsAssemble" />
 	
+	<target name="init-log">
+		<tstamp>
+			<format property="timestamp" pattern="yyyy-MM-dd HH:mm" />
+		</tstamp>
+		<echo message="*****************************************************" />
+		<echo message="WebService Build Started: ${timestamp}" />
+		<echo message="*****************************************************" />
+	</target>
+	
+	<presetdef name="javac">
+		<javac includeantruntime="last" />
+	</presetdef>
+	
+	<!-- Clean the project -->
+	<target name="clean">
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="${output.dir}" includes="**"/>
+			<fileset dir="${temperature.ws.output.dir}" includes="**"/>
+			<fileset dir="${dist.modules.dir}" includes="**"/>
+		</delete>
+	</target>
+	
+	<target name="init-env">
+			<mkdir dir="${output.dir}" />
+			<mkdir dir="${temperature.ws.output.dir}" />
+			<mkdir dir="${dist.modules.dir}" />
+	</target>
+	
 	<!-- Compile Webservice Core -->
 	<target name="compile-ws" description="Compile Webservice Java source files">
 		<javac destdir="${output.dir}" classpathref="classpath" debug="${javac.debug}" nowarn="${javac.nowarn}" deprecation="${javac.deprecation}" encoding="UTF8" source="1.6" target="1.6">
-			<src path="${src.java.ws.dir}"/>
+			<src path="${src.java.temperature.ws.dir}"/>
 		</javac>
 	</target>
 	
+	<!-- Build Webservice Core JAR -->
+	<target name="build-ws-jar" depends="compile-ws">
+		<jar destfile="${dist.modules.dir}/temperature_ws.jar" 
+			 basedir="${output.dir}" 
+			 includes="temperature/ws/api/**" />
+	</target>
+	
 	<target name="generate-wsdl" description="Generates WSDL from java service class">
-
 		<!-- Create WSDLS-->
-		<jaxwsgenwsdl classpath="${output.dir}" classpathref="classpath"
-  		interfaceName="ws.HelloPort"   className= "ws.HelloPortImpl"
-      	targetNamespace="http://www.pinjie.com/hello/1" output= "${output.dir}" />
+		<jaxwsgenwsdl classpath="${output.dir}" classpathref="classpath" className="temperature.ws.api.TemperatureImpl"
+  		interfaceName="temperature.ws.api.Temperature" output="${output.dir}" />
+	</target>
+	
+	<!-- Generate Config Service Java Clients from WSDLs -->
+	<target name="generate-wsclient" description="Generates JAXWS client proxy from the WSDL">
+    
+		<!-- Extract Java clients from latest WSDLS-->
+		<jaxwsgenproxy wsdl="${output.dir}/TemperatureService.wsdl" output="${src.java.dir}" packageName="${temperature.ws.client.packageName}" 
+                       valueTypePackagePrefix="${temperature.ws.client.packageName}" />
 
+		<!-- Compile -->
+		<mkdir dir="${output.dir}/wsdl/classes"/>
+		<javac srcdir="${temperature.ws.output.dir}" destdir="${output.dir}/wsdl/classes" classpathref="classpath" debug="${javac.debug}" nowarn="${javac.nowarn}" deprecation="${javac.deprecation}" encoding="UTF8" source="1.6" target="1.6"/>
+		
+	</target>
+	
+	<!-- Generate API WAR -->
+	<target name="generate-war" description="Generates JAXWS war file">
+
+		<!-- Assemble WAR file-->
+		<jaxwsassemble debug="true" className="temperature.ws.api.TemperatureImpl"
+					   war="${dist.modules.dir}/temperature_apis.war" output="${output.dir}" wsdl="${output.dir}/TemperatureService.wsdl"
+					   classpath="${dist.modules.dir}/temperature_ws.jar" platform="JRF" 
+					   cleanPreExistingOutputFiles="true" metadatacomplete="true" j2ee13="true" uri="/temperature/*"
+					   input="${output.dir}/wsdl/classes"/>
+	</target>
+	
+	<!-- Build WebService EAR -->
+	<target name="build-webservice-ear">
+		
+		<mkdir dir="${temperature.webapp.dir}/APP-INF-TMP" />
+		<mkdir dir="${temperature.webapp.dir}/APP-INF-TMP/APP-INF" />
+		<mkdir dir="${temperature.webapp.dir}/APP-INF-TMP/APP-INF/lib" />
+		
+		<!-- Populate APP-INF -->
+        <copy todir="${temperature.webapp.dir}/APP-INF-TMP/APP-INF/lib">
+          
+    	  <!-- Generated libraries -->
+          <fileset file="${dist.modules.dir}/temperature_ws.jar" />
+        </copy>
+
+		<!-- Create EAR -->
+		<ear destfile="${dist.modules.dir}/temperature_ws.ear" appxml="${temperature.webapp.dir}/META-INF/application.xml">
+			<fileset file="${dist.modules.dir}/temperature_apis.war" />
+			<fileset dir="${temperature.webapp.dir}/APP-INF-TMP" />
+		</ear>
+		
+		<delete dir="${temperature.webapp.dir}/APP-INF-TMP" />
 	</target>
 	
 </project>
