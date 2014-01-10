@@ -80,7 +80,7 @@
 	<target name="generate-war" description="Generates JAXWS war file">
 
 		<!-- Assemble WAR file-->
-		<jaxwsassemble debug="true" className="temperature.ws.api.TemperatureImpl"
+		<jaxwsassemble className="temperature.ws.api.TemperatureImpl"
 					   war="${dist.modules.dir}/temperature_apis.war" output="${output.dir}" wsdl="${output.dir}/TemperatureService.wsdl"
 					   classpath="${dist.modules.dir}/temperature_ws.jar" platform="JRF" 
 					   cleanPreExistingOutputFiles="true" metadatacomplete="true" j2ee13="true" uri="/temperature/*"
