@@ -67,7 +67,7 @@
 	<target name="generate-wsclient" description="Generates JAXWS client proxy from the WSDL">
     
 		<!-- Extract Java clients from latest WSDLS-->
-		<jaxwsgenproxy wsdl="${output.dir}/TemperatureService.wsdl" output="${src.java.dir}" packageName="${temperature.ws.client.packageName}" 
+		<jaxwsgenproxy wsdl="${output.dir}/MyTemperatureService.wsdl" output="${src.java.dir}" packageName="${temperature.ws.client.packageName}" 
                        valueTypePackagePrefix="${temperature.ws.client.packageName}" />
 
 		<!-- Compile -->
@@ -81,7 +81,7 @@
 
 		<!-- Assemble WAR file-->
 		<jaxwsassemble className="temperature.ws.api.TemperatureImpl"
-					   war="${dist.modules.dir}/temperature_apis.war" output="${output.dir}" wsdl="${output.dir}/TemperatureService.wsdl"
+					   war="${dist.modules.dir}/temperature_apis.war" output="${output.dir}" wsdl="${output.dir}/MyTemperatureService.wsdl"
 					   classpath="${dist.modules.dir}/temperature_ws.jar" platform="JRF" 
 					   cleanPreExistingOutputFiles="true" metadatacomplete="true" j2ee13="true" uri="/temperature/*"
 					   input="${output.dir}/wsdl/classes"/>

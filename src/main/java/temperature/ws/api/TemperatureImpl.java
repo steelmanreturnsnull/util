@@ -5,10 +5,10 @@ import javax.jws.WebService;
 @WebService
 (
 		targetNamespace = "http://www.pinjhuan.com/temperature/1",
-		name = "TemperatureName",
-	    serviceName = "TemperatureService",
+	    serviceName = "MyTemperatureService",
 	    endpointInterface = "temperature.ws.api.Temperature", 
-	    wsdlLocation = "WEB-INF/wsdl/TemperatureService.wsdl"
+	    wsdlLocation = "WEB-INF/wsdl/TemperatureService.wsdl",
+	    portName="MyTemperaturePort"
 )
 public class TemperatureImpl implements Temperature 
 {

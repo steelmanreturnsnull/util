@@ -5,18 +5,18 @@ import java.net.URL;
 
 import javax.xml.namespace.QName;
 
-import temperature.ws.target.TemperatureName;
-import temperature.ws.target.TemperatureService;
+import temperature.ws.target.MyTemperatureName;
+import temperature.ws.target.MyTemperatureService;
 
 public class TemperatureTestClient 
 {
 
 	public static void main(String[] args) throws MalformedURLException 
 	{
-		TemperatureService tempService = new TemperatureService(
+		MyTemperatureService tempService = new MyTemperatureService(
 				new URL("http://localhost:7001/ws/temperature?wsdl"),
-				new QName("http://www.pinjhuan.com/temperature/1","TemperatureService"));
-		TemperatureName tempName = tempService.getTemperatureNamePort();
+				new QName("http://www.pinjhuan.com/temperature/1","MyTemperatureService"));
+		MyTemperatureName tempName = tempService.getMyTemperaturePort();
 
 		double c = 100;
 		System.out.println(c + " celsius is " + tempName.celsiusToFahrenheit(c) + " in fahenheit");
